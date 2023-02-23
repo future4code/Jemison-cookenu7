@@ -1,34 +1,44 @@
-import { UserRole } from './../model/user';
-import { UserDatabase } from "../data/UserDatabase";
-import { CustomError, InvalidEmail, InvalidName, InvalidPassword, Unauthorized, UserNotFound, InvalidRole, InvalidAdmin } from "../error/customError";
+import { UserDatabase } from "../data/UserDatabase"
+import { 
+  CustomError, 
+  InvalidEmail, 
+  InvalidLogin, 
+  InvalidPasswordSignup, 
+  InvalidName, 
+  InvalidPassword, 
+  UserNotFound } from "../error/customError"
+
 import {
   UserInputDTO,
   user,
-  EditUserInputDTO,
-  EditUserInput,
   LoginInputDTO,
-} from "../model/user";
-import { IdGenerator } from "../services/IdGenerator";
-import { TokenGenerator } from "../services/TokenGenerator";
+} from "../model/user"
+
+import { IdGenerator } from "../services/IdGenerator"
+import { TokenGenerator } from "../services/TokenGenerator"
 
 const idGenerator = new IdGenerator()
 const tokenGenerator = new TokenGenerator()
 const userDatabase = new UserDatabase();
 
 export class UserBusiness {
-  public createUser = async (input: UserInputDTO): Promise<string> => {
+  public signup = async (input: UserInputDTO): Promise<string> => {
     try {
-      const { name, nickname, email, password, role } = input;
+      const { name, email, password } = input
 
-      if (!name || !nickname || !email || !password || !role) {
+      if (!name || !email || !password) {
         throw new CustomError(
           400,
-          'Preencha os campos "name","nickname", "email", "password"e "role"'
+          'Preencha os campos "name", "email" e "password".'
         );
       }
 
       if (name.length < 4) {
         throw new InvalidName();
+      }
+
+      if (password.length <= 5) {
+        throw new InvalidPasswordSignup();
       }
 
       if (!email.includes("@")) {
@@ -36,109 +46,80 @@ export class UserBusiness {
       }
 
       const id: string = idGenerator.generateId()
-
-      if(role.toUpperCase() != UserRole.ADMIN && role.toUpperCase() != UserRole.NORMAL){
-        throw new InvalidRole()
-      }
       
       const user: user = {
         id,
         name,
-        nickname,
         email,
         password,
-        role,
-      };
+      }
    
-      await userDatabase.insertUser(user);
-      const token = tokenGenerator.generateToken({id: user.id, role: user.role})
+      await userDatabase.signup(user)
+      const token = tokenGenerator.generateToken({id: user.id})
 
       return token
     } catch (error: any) {
       throw new CustomError(400, error.message);
     }
-  };
+  }
 
   public login = async (input: LoginInputDTO): Promise<string> => {
     try {
-      const { email, password } = input;
+      const { email, password } = input
     
       if (!email || !password) {
-        throw new CustomError(
-          400,
-          'Preencha os campos"email" e "password"'
-        );
+        throw new InvalidLogin();
       }
 
       if (!email.includes("@")) {
         throw new InvalidEmail();
       }
 
-      const user = await userDatabase.findUser(email);
+      const user = await userDatabase.login(email);
 
       if (!user) {
-        throw new UserNotFound()
+        throw new UserNotFound();
       }
 
       if(password !== user.password){ 
-        throw new InvalidPassword()
+        throw new InvalidPassword();
       }
 
-      const token = tokenGenerator.generateToken({id: user.id, role: user.role})
+      if(email !== user.email){ 
+        throw new InvalidEmail();
+      }
+
+      const token = tokenGenerator.generateToken({id: user.id})
      
       return token
     } catch (error: any) {
       throw new CustomError(400, error.message);
     }
-  };
+  }
 
-  public editUser = async (input: EditUserInputDTO) => {
+  public getProfile = async(token:string)=>{
     try {
-      const { name, nickname, id, token } = input;
 
-      if (!name || !nickname || !id || !token) {
-        throw new CustomError(
-          400,
-          'Preencha os campos "id", "name", "nickname" e "token"'
-        );
-      }
-
-      const data = tokenGenerator.tokenData(token)
-
-      if(!data.id) {
-        throw new Unauthorized()
-      }
-
-      if (name.length < 4) {
-        throw new InvalidName();
-      }
-
-      const editUserInput: EditUserInput = {
-        id,
-        name,
-        nickname,
-      };
-
-      const userDatabase = new UserDatabase();
-      await userDatabase.editUser(editUserInput);
-    } catch (error: any) {
-      throw new CustomError(400, error.message);
-    }
-  };
-
-  public getUserById = async(token:string)=>{
-    try {
       const userDatabase = new UserDatabase()
-      const user = await userDatabase.getUserById(token);
-
-      if(user.role != "NORMAL"){
-        throw new InvalidAdmin()
-      }
+      const user = await userDatabase.getProfile(token)
       
       return user
 
     } catch (err:any) {
       throw new Error(err.message);
     }
-}
+  }
+
+  public profileSearch = async(token: string, id:string)=>{
+    try {
+
+      const userDatabase = new UserDatabase()
+      const user = await userDatabase.profileSearch(id)
+      
+      return user
+
+    } catch (err:any) {
+      throw new Error(err.message);
+    }
+  }
 }

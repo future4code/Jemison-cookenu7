@@ -34,6 +34,18 @@ export class InvalidPassword extends CustomError{
     }
 }
 
+export class InvalidLogin extends CustomError{ 
+    constructor(){
+        super(400, 'Preencha os campos"email" e "password"')
+    }
+}
+
+export class InvalidPasswordSignup extends CustomError{ 
+    constructor(){
+        super(400, "Senha deve conter o mínimo de 6 caractéries.")
+    }
+}
+
 export class UserNotFound extends CustomError{ 
     constructor(){
         super(404, "Usuário não encontrado")

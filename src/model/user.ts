@@ -3,21 +3,12 @@ export type user = {
    email: string
    password: string
    name: string
-   nickname: string
-   role: string
-}
-
-export enum UserRole{
-   ADMIN = "ADMIN",
-   NORMAL = "NORMAL"  
 }
 
 export interface UserInputDTO {
    name: string,
-   nickname: string,
    email: string,
-   password: string,
-   role: string
+   password: string
 }
 
 export interface LoginInputDTO {
@@ -40,5 +31,4 @@ export interface EditUserInput {
 
 export interface AuthenticationData {
    id: string
-   role: string
 }
