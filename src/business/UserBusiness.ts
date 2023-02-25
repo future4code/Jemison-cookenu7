@@ -100,7 +100,6 @@ export class UserBusiness {
   public getProfile = async(token:string)=>{
     try {
 
-      const userDatabase = new UserDatabase()
       const user = await userDatabase.getProfile(token)
       
       return user
@@ -113,9 +112,7 @@ export class UserBusiness {
   public profileSearch = async(token: string, id:string)=>{
     try {
 
-      const userDatabase = new UserDatabase()
       const user = await userDatabase.profileSearch(id)
-      
       return user
 
     } catch (err:any) {

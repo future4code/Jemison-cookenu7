@@ -1,5 +1,5 @@
 import { TokenGenerator } from './../services/TokenGenerator'
-import { PostDatabase } from './../data/PostDaabase'
+import { PostDatabase } from '../data/PostDatabase'
 import { post, PostInputDTO } from './../model/post'
 import { IdGenerator } from './../services/IdGenerator'
 import { CustomError } from './../error/customError'
@@ -36,6 +36,17 @@ export class PostBusiness {
       return token
     } catch (error: any) {
       throw new CustomError(400, error.message);
+    }
+  }
+
+  public postSearch = async(token: string, id:string)=>{
+    try {
+
+      const post = await postDatabase.postSearch(id)
+      return post
+
+    } catch (err:any) {
+      throw new Error(err.message);
     }
   }
 }

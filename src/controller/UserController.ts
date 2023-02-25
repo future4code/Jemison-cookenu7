@@ -3,6 +3,9 @@ import { UserBusiness } from "../business/UserBusiness"
 import { LoginInputDTO, UserInputDTO } from "../model/user"
 import { TokenGenerator } from '../services/TokenGenerator'
 
+const tokenGenerator = new TokenGenerator()
+const userBusiness = new UserBusiness()
+
 export class UserController {
 
   public signup = async (req: Request, res: Response) => {
@@ -15,7 +18,6 @@ export class UserController {
         password
       }
 
-      const userBusiness = new UserBusiness()
       const token = await userBusiness.signup(input)
       
       res.status(201).send({ message: "Usuário criado!", token })
@@ -32,7 +34,7 @@ export class UserController {
         email,
         password,
       }
-      const userBusiness = new UserBusiness()
+
       const token = await userBusiness.login(input)
       
       res.status(200).send({ message: "Usuário logado!", token })
@@ -45,10 +47,8 @@ export class UserController {
     try {
       const token = req.headers.authorization as string
   
-      const tokenGenerator = new TokenGenerator()
       const authenticationData = tokenGenerator.tokenData(token)
 
-      const userBusiness = new UserBusiness()
       const user = await userBusiness.getProfile(authenticationData.id)
   
       res.status(200).send({
@@ -69,10 +69,8 @@ export class UserController {
       const id = req.params.id
       const token = req.headers.authorization as string
   
-      const tokenGenerator = new TokenGenerator()
       const authenticationData = tokenGenerator.tokenData(token)
 
-      const userBusiness = new UserBusiness()
       const user = await userBusiness.profileSearch(authenticationData as unknown as string, id)
   
       res.status(200).send({
